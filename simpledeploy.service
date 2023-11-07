@@ -1,0 +1,11 @@
+[Unit]
+Description=SimpleDeploy Daemon
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/admin/.pyenv/shims/python /home/admin/py-simple-deployer-p3.11.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
