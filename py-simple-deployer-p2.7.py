@@ -5,7 +5,7 @@ from collections import namedtuple
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 SETTINGS_FILENAME = "lhs-deployer-settings.json"
-PROJECTS_DIR = "/home/admin/projects"
+PROJECTS_DIR = "NOT_SPECIFIED"  # You can specify your PROJECTS_DIR here
 HOST = "0.0.0.0"
 PORT = 8069
 
@@ -131,6 +131,9 @@ class Server(BaseHTTPRequestHandler):
         else:
             self.respond_json({"message": "Need to specify the project"}, 400)
 
+
+if PROJECTS_DIR == "NOT_SPECIFIED":
+    raise Exception("Specify PROJECTS_DIR variable")
 
 server = HTTPServer((HOST, PORT), Server)
 server.serve_forever()
