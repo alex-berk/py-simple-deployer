@@ -3,6 +3,7 @@ import os
 import json
 from dataclasses import dataclass
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from typing import Optional, Tuple
 
 SETTINGS_FILENAME = "lhs-deployer-settings.json"
 PROJECTS_DIR = ""
@@ -32,7 +33,7 @@ class CommandResult:
 
 
 class Deployer:
-    def __init__(self, base_path) -> None:
+    def __init__(self, base_path: str) -> None:
         self.base_path = base_path
         self._settings = {}
         self._commands: list[Command] = []
@@ -89,7 +90,7 @@ class DeployerOrchestrator:
             if os.path.exists(settings_path):
                 self._deployers[project_dir] = Deployer(path)
 
-    def deploy(self, project_name: str, checkout_first: bool) -> (dict, int):
+    def deploy(self, project_name: str, checkout_first: bool) -> Tuple[dict, Optional[int]]:
         deployer = self._deployers.get(project_name)
         if not deployer:
             return ({"message": f"project '{project_name}' exist"}, 404)
@@ -97,7 +98,7 @@ class DeployerOrchestrator:
         if result.error:
             return ({"message": f"Encountered an error while running. Details:\nCommand: {result.details.command}, Step: '{result.details.step}'\n{result.details.code}: {result.details.stderr}"}, 500)
         else:
-            return ({"message": "Success"},)
+            return ({"message": "Success"}, 200)
 
 
 class Server(BaseHTTPRequestHandler):
