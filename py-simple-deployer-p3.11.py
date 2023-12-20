@@ -4,10 +4,18 @@ import json
 from dataclasses import dataclass
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-SETTINGS_FILENAME = "lhs-deployer-settings.json"
-PROJECTS_DIR = ""
-HOST = "0.0.0.0"
-PORT = 8069
+
+def get_param(parm_name: str, default_value: str = None) -> str:
+    if param_value := os.getenv(parm_name, default_value):
+        return param_value
+    raise Exception(f"Missing env param {parm_name}")
+
+
+PROJECTS_DIR = get_param("PROJECTS_DIR")
+SETTINGS_FILENAME = get_param(
+    "SETTINGS_FILENAME", "lhs-deployer-settings.json")
+HOST = get_param("HOST", "0.0.0.0")
+PORT = get_param("PORT", "8069")
 
 
 @dataclass
@@ -136,9 +144,6 @@ class Server(BaseHTTPRequestHandler):
             self.respond_json({"message": "Need to specify the project"}, 400)
 
 
-if not PROJECTS_DIR:
-    raise Exception("Specify PROJECTS_DIR variable")
-
-server = HTTPServer((HOST, PORT), Server)
+server = HTTPServer((HOST, int(PORT)), Server)
 server.serve_forever()
 server.server_close()

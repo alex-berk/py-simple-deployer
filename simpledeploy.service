@@ -4,6 +4,7 @@ After=network-online.target
 
 [Service]
 Type=simple
+Environment="PROJECTS_DIR=/home/user/projects"
 ExecStart=/home/admin/.pyenv/shims/python /home/admin/py-simple-deployer-p3.11.py
 Restart=on-failure
 

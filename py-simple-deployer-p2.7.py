@@ -4,10 +4,6 @@ import json
 from collections import namedtuple
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
-SETTINGS_FILENAME = "lhs-deployer-settings.json"
-PROJECTS_DIR = "NOT_SPECIFIED"  # You can specify your PROJECTS_DIR here
-HOST = "0.0.0.0"
-PORT = 8069
 
 Command = namedtuple("Command", ["name", "steps", "optional"])
 
@@ -24,6 +20,20 @@ class CommandResult:
     def __init__(self, error, details=None):
         self.error = error
         self.details = details
+
+
+def get_param(parm_name, default_value=None):
+    param_value = os.getenv(parm_name, default_value)
+    if param_value:
+        return param_value
+    raise Exception("Missing param {}".format(parm_name))
+
+
+PROJECTS_DIR = get_param("PROJECTS_DIR")
+SETTINGS_FILENAME = get_param(
+    "SETTINGS_FILENAME", "lhs-deployer-settings.json")
+HOST = get_param("HOST", "0.0.0.0")
+PORT = get_param("PORT", "8069")
 
 
 class Deployer:
@@ -132,9 +142,6 @@ class Server(BaseHTTPRequestHandler):
             self.respond_json({"message": "Need to specify the project"}, 400)
 
 
-if PROJECTS_DIR == "NOT_SPECIFIED":
-    raise Exception("Specify PROJECTS_DIR variable")
-
-server = HTTPServer((HOST, PORT), Server)
+server = HTTPServer((HOST, int(PORT)), Server)
 server.serve_forever()
 server.server_close()
