@@ -19,14 +19,16 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=PATH_TO_YOUR_PYTHON_EXECUTABLE PATH_TO_THE_SCRIPT
+Environment="PROJECTS_DIR=<path to your projects dir>"
+ExecStart=<path to your python executable> <path to the script>
 Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-Replace `PATH_TO_YOUR_PYTHON_EXECUTABLE` with path to your python executable (you can check it with command `which python`), and `PATH_TO_THE_SCRIPT` with location of the main script.
+Set path to your projects in `PROJECTS_DIR` environment variable.
+Replace `<path to your python executable>` with path to your python executable (you can check it with command `which python`), and `<path to the script>` with location of the main script (`pye-simple-deployer-pX.X.py`).
 You can check the example of the file [here](https://github.com/alex-berk/py-simple-deployer/blob/main/simpledeploy.service).
 
 4. Restart your systemctl daemon with command `systemctl daemon-reload`

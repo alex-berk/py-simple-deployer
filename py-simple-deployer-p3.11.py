@@ -4,10 +4,19 @@ import json
 from dataclasses import dataclass
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-SETTINGS_FILENAME = "lhs-deployer-settings.json"
-PROJECTS_DIR = ""
-HOST = "0.0.0.0"
-PORT = 8069
+
+def get_param(parm_name: str, default_value: str = None) -> str:
+    if param_value := os.getenv(parm_name, default_value):
+        return param_value
+    raise Exception(f"Missing env param {parm_name}")
+
+
+PROJECTS_DIR = get_param("PROJECTS_DIR")
+SETTINGS_FILENAME = get_param(
+    "SETTINGS_FILENAME", "lhs-deployer-settings.json")
+BRANCH_NAME = get_param("BRANCH_NAME", "")
+HOST = get_param("HOST", "0.0.0.0")
+PORT = get_param("PORT", "8069")
 
 
 @dataclass
@@ -58,11 +67,15 @@ class Deployer:
                                                         command=command.name, step=step))
         return CommandResult(error=False)
 
-    def deploy(self, checkout_first: bool) -> CommandResult:
+    def deploy(self, pull_first: bool, checkout_branch: str) -> CommandResult:
         commands_to_run = self._commands
-        if checkout_first:
-            commands_to_run = [
-                Command("Checkout new code", ["git pull"], False)] + self._commands
+        if checkout_branch:
+            commands_to_run.insert(0, Command(
+                "Checkout default branch", f"git checkout {BRANCH_NAME}", True))
+        if pull_first:
+            commands_to_run.insert(0, Command(
+                "Pull new code", ["git pull"], False))
+
         for command in commands_to_run:
             result = self._run_command(command)
             if result.error:
@@ -89,11 +102,11 @@ class DeployerOrchestrator:
             if os.path.exists(settings_path):
                 self._deployers[project_dir] = Deployer(path)
 
-    def deploy(self, project_name: str, checkout_first: bool) -> (dict, int):
+    def deploy(self, project_name: str, pull_first: bool, checkout_branch: str) -> (dict, int):
         deployer = self._deployers.get(project_name)
         if not deployer:
-            return ({"message": f"project '{project_name}' exist"}, 404)
-        result = deployer.deploy(checkout_first)
+            return ({"message": f"project '{project_name}' doesn't exist"}, 404)
+        result = deployer.deploy(pull_first, checkout_branch)
         if result.error:
             return ({"message": f"Encountered an error while running. Details:\nCommand: {result.details.command}, Step: '{result.details.step}'\n{result.details.code}: {result.details.stderr}"}, 500)
         else:
@@ -129,16 +142,14 @@ class Server(BaseHTTPRequestHandler):
             post_body = {}
 
         project = post_body.get("project")
-        checkout = bool(post_body.get("checkout")) or True
+        pull = bool(post_body.get("pull", True))
         if project:
-            self.respond_json(*self.orchestrator.deploy(project, checkout))
+            self.respond_json(
+                *self.orchestrator.deploy(project, pull, BRANCH_NAME))
         else:
             self.respond_json({"message": "Need to specify the project"}, 400)
 
 
-if not PROJECTS_DIR:
-    raise Exception("Specify PROJECTS_DIR variable")
-
-server = HTTPServer((HOST, PORT), Server)
+server = HTTPServer((HOST, int(PORT)), Server)
 server.serve_forever()
 server.server_close()
