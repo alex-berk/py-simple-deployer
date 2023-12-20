@@ -5,18 +5,15 @@ from dataclasses import dataclass
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
-def get_param(parm_name: str, default_value: str = None) -> str:
-    if param_value := os.getenv(parm_name, default_value):
-        return param_value
-    raise Exception(f"Missing env param {parm_name}")
-
-
-PROJECTS_DIR = get_param("PROJECTS_DIR")
-SETTINGS_FILENAME = get_param(
+PROJECTS_DIR = os.getenv("PROJECTS_DIR")
+SETTINGS_FILENAME = os.getenv(
     "SETTINGS_FILENAME", "lhs-deployer-settings.json")
-BRANCH_NAME = get_param("BRANCH_NAME") or ""
-HOST = get_param("HOST", "0.0.0.0")
-PORT = get_param("PORT", "8069")
+BRANCH_NAME = os.getenv("BRANCH_NAME", "")
+HOST = os.getenv("HOST", "0.0.0.0")
+PORT = os.getenv("PORT", "8069")
+
+if not PROJECTS_DIR:
+    raise Exception(f"Missing env param PROJECTS_DIR")
 
 
 @dataclass
