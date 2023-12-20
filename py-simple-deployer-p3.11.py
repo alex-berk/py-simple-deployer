@@ -14,6 +14,7 @@ def get_param(parm_name: str, default_value: str = None) -> str:
 PROJECTS_DIR = get_param("PROJECTS_DIR")
 SETTINGS_FILENAME = get_param(
     "SETTINGS_FILENAME", "lhs-deployer-settings.json")
+BRANCH_NAME = get_param("BRANCH_NAME", "main")
 HOST = get_param("HOST", "0.0.0.0")
 PORT = get_param("PORT", "8069")
 
@@ -66,11 +67,12 @@ class Deployer:
                                                         command=command.name, step=step))
         return CommandResult(error=False)
 
-    def deploy(self, checkout_first: bool) -> CommandResult:
-        commands_to_run = self._commands
-        if checkout_first:
+    def deploy(self, pull_first: bool) -> CommandResult:
+        commands_to_run = [
+            Command("Checkout default branch", f"git checkout {BRANCH_NAME}", True)] + self._commands
+        if pull_first:
             commands_to_run = [
-                Command("Checkout new code", ["git pull"], False)] + self._commands
+                Command("Pull new code", ["git pull"], False)] + self._commands
         for command in commands_to_run:
             result = self._run_command(command)
             if result.error:
@@ -97,11 +99,11 @@ class DeployerOrchestrator:
             if os.path.exists(settings_path):
                 self._deployers[project_dir] = Deployer(path)
 
-    def deploy(self, project_name: str, checkout_first: bool) -> (dict, int):
+    def deploy(self, project_name: str, pull_first: bool) -> (dict, int):
         deployer = self._deployers.get(project_name)
         if not deployer:
             return ({"message": f"project '{project_name}' exist"}, 404)
-        result = deployer.deploy(checkout_first)
+        result = deployer.deploy(pull_first)
         if result.error:
             return ({"message": f"Encountered an error while running. Details:\nCommand: {result.details.command}, Step: '{result.details.step}'\n{result.details.code}: {result.details.stderr}"}, 500)
         else:
@@ -137,9 +139,9 @@ class Server(BaseHTTPRequestHandler):
             post_body = {}
 
         project = post_body.get("project")
-        checkout = bool(post_body.get("checkout")) or True
+        pull = bool(post_body.get("pull", True))
         if project:
-            self.respond_json(*self.orchestrator.deploy(project, checkout))
+            self.respond_json(*self.orchestrator.deploy(project, pull))
         else:
             self.respond_json({"message": "Need to specify the project"}, 400)
 
