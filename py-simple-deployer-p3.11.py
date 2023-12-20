@@ -14,7 +14,7 @@ def get_param(parm_name: str, default_value: str = None) -> str:
 PROJECTS_DIR = get_param("PROJECTS_DIR")
 SETTINGS_FILENAME = get_param(
     "SETTINGS_FILENAME", "lhs-deployer-settings.json")
-BRANCH_NAME = get_param("BRANCH_NAME", "main")
+BRANCH_NAME = get_param("BRANCH_NAME", "")
 HOST = get_param("HOST", "0.0.0.0")
 PORT = get_param("PORT", "8069")
 
@@ -67,12 +67,15 @@ class Deployer:
                                                         command=command.name, step=step))
         return CommandResult(error=False)
 
-    def deploy(self, pull_first: bool) -> CommandResult:
-        commands_to_run = [
-            Command("Checkout default branch", f"git checkout {BRANCH_NAME}", True)] + self._commands
+    def deploy(self, pull_first: bool, checkout_branch: str) -> CommandResult:
+        commands_to_run = self._commands
+        if checkout_branch:
+            commands_to_run.insert(0, Command(
+                "Checkout default branch", f"git checkout {BRANCH_NAME}", True))
         if pull_first:
-            commands_to_run = [
-                Command("Pull new code", ["git pull"], False)] + self._commands
+            commands_to_run.insert(0, Command(
+                "Pull new code", ["git pull"], False))
+
         for command in commands_to_run:
             result = self._run_command(command)
             if result.error:
@@ -99,11 +102,11 @@ class DeployerOrchestrator:
             if os.path.exists(settings_path):
                 self._deployers[project_dir] = Deployer(path)
 
-    def deploy(self, project_name: str, pull_first: bool) -> (dict, int):
+    def deploy(self, project_name: str, pull_first: bool, checkout_branch: str) -> (dict, int):
         deployer = self._deployers.get(project_name)
         if not deployer:
             return ({"message": f"project '{project_name}' exist"}, 404)
-        result = deployer.deploy(pull_first)
+        result = deployer.deploy(pull_first, checkout_branch)
         if result.error:
             return ({"message": f"Encountered an error while running. Details:\nCommand: {result.details.command}, Step: '{result.details.step}'\n{result.details.code}: {result.details.stderr}"}, 500)
         else:
@@ -141,7 +144,8 @@ class Server(BaseHTTPRequestHandler):
         project = post_body.get("project")
         pull = bool(post_body.get("pull", True))
         if project:
-            self.respond_json(*self.orchestrator.deploy(project, pull))
+            self.respond_json(
+                *self.orchestrator.deploy(project, pull, BRANCH_NAME))
         else:
             self.respond_json({"message": "Need to specify the project"}, 400)
 
