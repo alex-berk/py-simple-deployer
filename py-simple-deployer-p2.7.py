@@ -14,7 +14,7 @@ def get_param(parm_name, default_value=None):
 PROJECTS_DIR = get_param("PROJECTS_DIR")
 SETTINGS_FILENAME = get_param(
     "SETTINGS_FILENAME", "lhs-deployer-settings.json")
-BRANCH_NAME = get_param("BRANCH_NAME", "")
+BRANCH_NAME = get_param("BRANCH_NAME") or ""
 HOST = get_param("HOST", "0.0.0.0")
 PORT = get_param("PORT", "8069")
 
