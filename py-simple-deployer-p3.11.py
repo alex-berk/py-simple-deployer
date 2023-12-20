@@ -105,7 +105,7 @@ class DeployerOrchestrator:
     def deploy(self, project_name: str, pull_first: bool, checkout_branch: str) -> (dict, int):
         deployer = self._deployers.get(project_name)
         if not deployer:
-            return ({"message": f"project '{project_name}' exist"}, 404)
+            return ({"message": f"project '{project_name}' doesn't exist"}, 404)
         result = deployer.deploy(pull_first, checkout_branch)
         if result.error:
             return ({"message": f"Encountered an error while running. Details:\nCommand: {result.details.command}, Step: '{result.details.step}'\n{result.details.code}: {result.details.stderr}"}, 500)
