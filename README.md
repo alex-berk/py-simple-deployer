@@ -53,7 +53,7 @@ Example of valid config file:
   "commands": [
     {
       "name": "docker cleanup",
-      "steps": ["docker stop torrent-watcher", "docker rm torrent-watcher"],
+      "steps": ["docker stop container-name", "docker rm container-name"],
       "optional": true
     },
     { "name": "build", "steps": ["pipenv run build"] },
