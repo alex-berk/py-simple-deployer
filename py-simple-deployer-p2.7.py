@@ -125,9 +125,6 @@ class Server(BaseHTTPRequestHandler):
         self.respond_text(json.dumps(data), response_code,
                           content_type="application-json")
 
-    def get_clear_path(self, path):
-        return path.split("?")[0][1:]
-
     def do_POST(self):
         try:
             content_len = int(self.headers.get('Content-Length'))
@@ -145,6 +142,9 @@ class Server(BaseHTTPRequestHandler):
                 *self.orchestrator.deploy(project, pull, BRANCH_NAME))
         else:
             self.respond_json({"message": "Need to specify the project"}, 400)
+
+    def do_GET(self):
+        self.respond_json({"status": "ok"})
 
 
 server = HTTPServer((HOST, int(PORT)), Server)
