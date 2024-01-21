@@ -12,7 +12,7 @@ HOST = os.getenv("HOST", "0.0.0.0")
 PORT = os.getenv("PORT", "8069")
 
 if not PROJECTS_DIR:
-    raise Exception(f"Missing env param PROJECTS_DIR")
+    raise Exception("Missing env param PROJECTS_DIR")
 
 
 class Command(object):
@@ -102,12 +102,12 @@ class DeployerOrchestrator(object):
     def deploy(self, project_name, pull_first, checkout_branch):
         deployer = self._deployers.get(project_name)
         if not deployer:
-            return ({"message": "project '{}' exist".format(project_name)}, 404)
+            return ({"message": "project '{}' doesn't exist".format(project_name)}, 404)
         result = deployer.deploy(pull_first, checkout_branch)
         if result.error:
             return ({"message": "Encountered an error while running. Details:\nCommand: {}, Step: '{}'\n{}: {}".format(result.details.command, result.details.step, result.details.code, result.details.stderr)}, 500)
-        else:
-            return ({"message": "Success"},)
+
+        return ({"message": "Success"},)
 
 
 class Server(BaseHTTPRequestHandler):
@@ -137,14 +137,14 @@ class Server(BaseHTTPRequestHandler):
 
         project = post_body.get("project")
         pull = bool(post_body.get("pull", True))
-        if project:
-            self.respond_json(
-                *self.orchestrator.deploy(project, pull, BRANCH_NAME))
-        else:
+        if not project:
             self.respond_json({"message": "Need to specify the project"}, 400)
 
+        self.respond_json(
+            *self.orchestrator.deploy(project, pull, BRANCH_NAME))
+
     def do_GET(self):
-        self.respond_json({"status": "ok"})
+        self.respond_json({"health": "ok"})
 
 
 server = HTTPServer((HOST, int(PORT)), Server)
