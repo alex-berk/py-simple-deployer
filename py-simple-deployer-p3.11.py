@@ -1,7 +1,7 @@
 import subprocess
 import os
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
@@ -34,7 +34,7 @@ class ErrorDetails:
 @dataclass
 class CommandResult:
     error: bool
-    details: ErrorDetails or None = None
+    details: ErrorDetails | None = None
 
 
 class Deployer:
@@ -106,8 +106,8 @@ class DeployerOrchestrator:
         result = deployer.deploy(pull_first, checkout_branch)
         if result.error:
             return ({"message": f"Encountered an error while running. Details:\nCommand: {result.details.command}, Step: '{result.details.step}'\n{result.details.code}: {result.details.stderr}"}, 500)
-        else:
-            return ({"message": "Success"},)
+
+        return ({"message": "Success"},)
 
 
 class Server(BaseHTTPRequestHandler):
@@ -125,9 +125,6 @@ class Server(BaseHTTPRequestHandler):
         self.respond_text(json.dumps(data), response_code,
                           content_type="application-json")
 
-    def get_clear_path(self, path: str) -> str:
-        return path.split("?")[0][1:]
-
     def do_POST(self):
         try:
             content_len = int(self.headers.get('Content-Length'))
@@ -140,11 +137,14 @@ class Server(BaseHTTPRequestHandler):
 
         project = post_body.get("project")
         pull = bool(post_body.get("pull", True))
-        if project:
-            self.respond_json(
-                *self.orchestrator.deploy(project, pull, BRANCH_NAME))
-        else:
+        if not project:
             self.respond_json({"message": "Need to specify the project"}, 400)
+
+        self.respond_json(
+            *self.orchestrator.deploy(project, pull, BRANCH_NAME))
+
+    def do_GET(self):
+        self.respond_json({"health": "ok"})
 
 
 server = HTTPServer((HOST, int(PORT)), Server)
