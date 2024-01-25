@@ -1,7 +1,7 @@
 import subprocess
 import os
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
@@ -64,11 +64,12 @@ class Deployer:
                                                         command=command.name, step=step))
         return CommandResult(error=False)
 
-    def deploy(self, pull_first: bool, checkout_branch: str) -> CommandResult:
+    def deploy(self, pull_first: bool, checkout_branch: str) -> CommandResult | None:
         commands_to_run = self._commands
+        # todo: consider reloading after pulling new code
         if checkout_branch:
             commands_to_run.insert(0, Command(
-                "Checkout default branch", f"git checkout {BRANCH_NAME}", True))
+                "Checkout default branch", [f"git checkout {BRANCH_NAME}"], True))
         if pull_first:
             commands_to_run.insert(0, Command(
                 "Pull new code", ["git pull"], False))
@@ -81,10 +82,9 @@ class Deployer:
 
 
 class DeployerOrchestrator:
-    _deployers = {}
-
     def __init__(self, base_dir: str) -> None:
         self.base_dir = base_dir
+        self._deployers = {}
         self._find_project_settings()
 
     def _find_project_settings(self):
@@ -99,7 +99,7 @@ class DeployerOrchestrator:
             if os.path.exists(settings_path):
                 self._deployers[project_dir] = Deployer(path)
 
-    def deploy(self, project_name: str, pull_first: bool, checkout_branch: str) -> (dict, int):
+    def run_deployer(self, project_name: str, pull_first: bool, checkout_branch: str) -> (dict, int):
         deployer = self._deployers.get(project_name)
         if not deployer:
             return ({"message": f"project '{project_name}' doesn't exist"}, 404)
@@ -141,7 +141,7 @@ class Server(BaseHTTPRequestHandler):
             self.respond_json({"message": "Need to specify the project"}, 400)
 
         self.respond_json(
-            *self.orchestrator.deploy(project, pull, BRANCH_NAME))
+            *self.orchestrator.run_deployer(project, pull, BRANCH_NAME))
 
     def do_GET(self):
         self.respond_json({"health": "ok"})
