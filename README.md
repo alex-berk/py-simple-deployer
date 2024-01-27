@@ -7,7 +7,7 @@ A simple deployer written in plain Python without any external dependencies to m
 In order for application to always run in the background it will need to add itself as service.
 To start the installation process, run `install.sh` script with `sudo` privileges.
 
-Installer will ask you to provide some variables:\
+Installer will ask you to provide some variables:
 * Your preffered python version. Python 3.11 version might be more stable, but 2.7 might be the version that comes as a default with your distro
 * Project direcrory - folder where deployer service will be looking for subdirectories with deploy config file
 * Name of the deploy config file. Default is `lhs-deployer-settings.json`, located in the root of each project
@@ -32,6 +32,7 @@ WantedBy=multi-user.target
 ```
 
 After that it will restart your systemctl daemon and start simpledeplyer process. You should see the message that installation was successful and simpledeploy service is now running.
+You can check it by running `service simpledeploy status` or sending get request to the endpoint (default is `localhost:8069`).
 
 ## Usage
 
