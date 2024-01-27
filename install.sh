@@ -56,6 +56,8 @@ echo "$SERVICE_FILE_CONTENT" > /etc/systemd/system/simpledeploy.service
 
 systemctl daemon-reload
 systemctl start simpledeploy
-systemctl is-active --quiet simpledeploy \ 
-	&& { echo "SimpleDeployer is Running"; } \
-	|| { echo "Something went wrong..."; }
+if systemctl is-active --quiet simpledeploy; then
+	echo "SimpleDeployer is Running"
+else
+	echo "Something went wrong..."
+fi
