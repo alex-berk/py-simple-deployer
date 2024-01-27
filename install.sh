@@ -33,8 +33,13 @@ else
 fi
 DEPLOYER_FILE="py-simple-deployer-p$PYTHON_VERSION.py"
 
-echo "Provided inputs:"
-echo $DEPLOYER_FILE $PYTHON_EXECUTABLE $PROJECTS_DIR $SETTINGS_FILENAME $BRANCH_NAME $HOST:$PORT $UUID
-
 SERVICE_FILE_CONTENT="[Unit]\nDescription=SimpleDeploy Daemon\nAfter=network-online.target\n\n[Service]\nType=simple\nEnvironment=\"PROJECTS_DIR=$PROJECTS_DIR\"\nEnvironment=\"SETTINGS_FILENAME=$SETTINGS_FILENAME\"\nEnvironment=\"BRANCH_NAME=$BRANCH_NAME\"\nEnvironment=\"HOST=$HOST\"\nEnvironment=\"PORT=$PORT\"\nEnvironment=\"UUID=$UUID\"\nExecStart=$PYTHON_EXECUTABLE $(pwd)$DEPLOYER_FILE\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target\n"
-echo $SERVICE_FILE_CONTENT > tempfile.service
+echo $SERVICE_FILE_CONTENT > /etc/systemd/system/simpledeploy.service
+
+systemctl daemon-reload
+systemctl start simpledeploy
+systemctl is-active --quiet simpledeploy \ 
+	&& echo "SimpleDeployer is Running"
+	&& echo "Your personal UUID is $UUID" \
+	&& echo "You will need it to access the service from CI service" \
+	|| echo "Something went wrong..."
