@@ -52,7 +52,7 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target"
 
-echo "$SERVICE_FILE_CONTENT" > simpledeploy.service
+echo "$SERVICE_FILE_CONTENT" > /etc/systemd/system/simpledeploy.service
 
 systemctl daemon-reload
 systemctl start simpledeploy
