@@ -36,7 +36,7 @@ You can check it by running `service simpledeploy status` or sending get request
 
 ## Usage
 
-On the server all your projects have to be stored in one directory. Path to that directory should be stored in the `PROJECTS_DIR` variable in the main script file (`py-simple-deployer-pX.X.py`)
+On the server all your projects have to be stored in one directory. Path to that directory should be stored in the `PROJECTS_DIR` that you specified during installation process. If you need to change the direcory, you can edit it in `/etc/systemd/system/simpledeploy.service`.
 
 ### Adding a deploy config
 
