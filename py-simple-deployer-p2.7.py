@@ -3,10 +3,8 @@ import os
 import json
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
-
 PROJECTS_DIR = os.getenv("PROJECTS_DIR")
-SETTINGS_FILENAME = os.getenv(
-    "SETTINGS_FILENAME", "lhs-deployer-settings.json")
+SETTINGS_FILENAME = os.getenv("SETTINGS_FILENAME", "lhs-deployer-settings.json")
 BRANCH_NAME = os.getenv("BRANCH_NAME", "")
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = os.getenv("PORT", "8069")
@@ -68,7 +66,7 @@ class Deployer(object):
         commands_to_run = self._commands
         if checkout_branch:
             commands_to_run.insert(0, Command(
-                "Checkout default branch", "git checkout {}".format(BRANCH_NAME), True))
+                "Checkout default branch", ["git checkout {}".format(BRANCH_NAME)], True))
         if pull_first:
             commands_to_run.insert(0, Command(
                 "Pull new code", ["git pull"], False))
@@ -81,10 +79,9 @@ class Deployer(object):
 
 
 class DeployerOrchestrator(object):
-    _deployers = {}
-
     def __init__(self, base_dir):
         self.base_dir = base_dir
+        self._deployers = {}
         self._find_project_settings()
 
     def _find_project_settings(self):
@@ -99,7 +96,7 @@ class DeployerOrchestrator(object):
             if os.path.exists(settings_path):
                 self._deployers[project_dir] = Deployer(path)
 
-    def deploy(self, project_name, pull_first, checkout_branch):
+    def run_deployer(self, project_name, pull_first, checkout_branch):
         deployer = self._deployers.get(project_name)
         if not deployer:
             return ({"message": "project '{}' doesn't exist".format(project_name)}, 404)
@@ -122,8 +119,7 @@ class Server(BaseHTTPRequestHandler):
         self.wfile.write(content + "\n")
 
     def respond_json(self, data, response_code=200):
-        self.respond_text(json.dumps(data), response_code,
-                          content_type="application-json")
+        self.respond_text(json.dumps(data), response_code, content_type="application-json")
 
     def do_POST(self):
         try:
@@ -141,7 +137,7 @@ class Server(BaseHTTPRequestHandler):
             self.respond_json({"message": "Need to specify the project"}, 400)
 
         self.respond_json(
-            *self.orchestrator.deploy(project, pull, BRANCH_NAME))
+            *self.orchestrator.run_deployer(project, pull, BRANCH_NAME))
 
     def do_GET(self):
         self.respond_json({"health": "ok"})
