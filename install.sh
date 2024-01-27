@@ -58,6 +58,4 @@ systemctl daemon-reload
 systemctl start simpledeploy
 systemctl is-active --quiet simpledeploy \ 
 	&& echo "SimpleDeployer is Running" \
-	# && echo "Your personal UUID is $UUID" \
-	# && echo "You will need it to access the service from CI service" \
 	|| echo "Something went wrong..."
