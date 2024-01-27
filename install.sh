@@ -23,7 +23,7 @@ PORT=$(get_user_input "Port" "8069")
 BRANCH_NAME=$(get_user_input "Branch to checkout (optional)")
 UUID=$(uuidgen)
 
-VERSIONS_2=("2", "2.7" "two")
+VERSIONS_2=("2" "2.7" "two")
 if [[ ${VERSIONS_2[@]} =~ $PYTHON_VERSION ]]; then
 	PYTHON_VERSION="2.7"
 	PYTHON_EXECUTABLE=$(which python)
@@ -39,7 +39,7 @@ echo $SERVICE_FILE_CONTENT > /etc/systemd/system/simpledeploy.service
 systemctl daemon-reload
 systemctl start simpledeploy
 systemctl is-active --quiet simpledeploy \ 
-	&& echo "SimpleDeployer is Running"
-	&& echo "Your personal UUID is $UUID" \
-	&& echo "You will need it to access the service from CI service" \
+	&& echo "SimpleDeployer is Running" \
+	# && echo "Your personal UUID is $UUID" \
+	# && echo "You will need it to access the service from CI service" \
 	|| echo "Something went wrong..."
