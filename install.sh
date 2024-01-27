@@ -35,8 +35,24 @@ else
 fi
 DEPLOYER_FILE="py-simple-deployer-p$PYTHON_VERSION.py"
 
-SERVICE_FILE_CONTENT="[Unit]\nDescription=SimpleDeploy Daemon\nAfter=network-online.target\n\n[Service]\nType=simple\nEnvironment=\"PROJECTS_DIR=$PROJECTS_DIR\"\nEnvironment=\"SETTINGS_FILENAME=$SETTINGS_FILENAME\"\nEnvironment=\"BRANCH_NAME=$BRANCH_NAME\"\nEnvironment=\"HOST=$HOST\"\nEnvironment=\"PORT=$PORT\"\nEnvironment=\"UUID=$UUID\"\nExecStart=$PYTHON_EXECUTABLE $(pwd)$DEPLOYER_FILE\nRestart=on-failure\n\n[Install]\nWantedBy=multi-user.target\n"
-echo $SERVICE_FILE_CONTENT > /etc/systemd/system/simpledeploy.service
+SERVICE_FILE_CONTENT="[Unit]
+Description=SimpleDeploy Daemon
+After=network-online.target
+[Service]
+Type=simple
+Environment=\"PROJECTS_DIR=$PROJECTS_DIR\"
+Environment=\"SETTINGS_FILENAME=$SETTINGS_FILENAME\"
+Environment=\"BRANCH_NAME=$BRANCH_NAME\"
+Environment=\"HOST=$HOST\"
+Environment=\"PORT=$PORT\"
+Environment=\"UUID=$UUID\"
+ExecStart=$PYTHON_EXECUTABLE $(pwd)$DEPLOYER_FILE
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target"
+
+echo "$SERVICE_FILE_CONTENT" > simpledeploy.service
 
 systemctl daemon-reload
 systemctl start simpledeploy
