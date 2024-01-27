@@ -46,7 +46,7 @@ Environment=\"BRANCH_NAME=$BRANCH_NAME\"
 Environment=\"HOST=$HOST\"
 Environment=\"PORT=$PORT\"
 Environment=\"UUID=$UUID\"
-ExecStart=$PYTHON_EXECUTABLE $(pwd)$DEPLOYER_FILE
+ExecStart=$PYTHON_EXECUTABLE $(pwd)/$DEPLOYER_FILE
 Restart=on-failure
 
 [Install]
