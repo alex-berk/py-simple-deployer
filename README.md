@@ -2,15 +2,19 @@
 
 A simple deployer written in plain Python without any external dependencies to manage home projects through GitHub Actions.
 
-## Getting started
+## Installation
 
-In order for application to always run in the background you'll need to add it as service. Here's an example on how to do it on Ubuntu:
+In order for application to always run in the background it will need to add itself as service.
+To start the installation process, run `install.sh` script with `sudo` privileges.
 
-1. Copy `py-simple-deployer` script of necessary python version on your deployment server. Version 2.7 comes with your distro by default, but version 3.11 will be more stable.
+Installer will ask you to provide some variables:\
+* Your preffered python version. Python 3.11 version might be more stable, but 2.7 might be the version that comes as a default with your distro
+* Project direcrory - folder where deployer service will be looking for subdirectories with deploy config file
+* Name of the deploy config file. Default is `lhs-deployer-settings.json`, located in the root of each project
+* Host and Port to for the deployer to listen
+* (optional) Name of the branch to checkout each time deployer is running
 
-2. Update `PROJECTS_DIR` with a path to the directory with your projects in the script file.
-
-3. Create a file `simpledeploy.service` in the `/etc/systemd/system` directory with this content:
+After that it'll create a `simpledeploy.service` in the `/etc/systemd/system` directory with content like that:
 
 ```
 [Unit]
@@ -27,13 +31,7 @@ Restart=on-failure
 WantedBy=multi-user.target
 ```
 
-Set path to your projects in `PROJECTS_DIR` environment variable.
-Replace `<path to your python executable>` with path to your python executable (you can check it with command `which python`), and `<path to the script>` with location of the main script (`py-simple-deployer-pX.X.py`).
-You can check the example of the file [here](https://github.com/alex-berk/py-simple-deployer/blob/main/simpledeploy.service).
-
-4. Restart your systemctl daemon with command `systemctl daemon-reload`
-5. Start the service by running command `service simpledeploy start`
-6. Check that the service is running with command `service simpledeploy status`
+After that it will restart your systemctl daemon and start simpledeplyer process. You should see the message that installation was successful and simpledeploy service is now running.
 
 ## Usage
 
