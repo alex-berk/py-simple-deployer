@@ -1,3 +1,5 @@
+#! /bin/bash
+
 function get_user_input() {
 	# expects prompt text and optional default value
 	prompt_text=$1
