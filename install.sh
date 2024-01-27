@@ -18,7 +18,7 @@ function get_user_input() {
 }
 
 PYTHON_VERSION=$(get_user_input "Do you want to use python 3 or 2?" "3.11")
-PROJECTS_DIR=$(get_user_input "Path to the directory with projects" "$HOME/projects")
+PROJECTS_DIR=$(get_user_input "Path to the directory with projects" "${PWD%/*}/projects")
 SETTINGS_FILENAME=$(get_user_input "Name for the file with deploy settings" "lhs-deployer-settings.json")
 HOST=$(get_user_input "Host" "0.0.0.0")
 PORT=$(get_user_input "Port" "8069")
