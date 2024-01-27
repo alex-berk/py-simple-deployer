@@ -1,4 +1,4 @@
-# Simple Deployer
+# Simple Deployer [![Better Stack Badge](https://uptime.betterstack.com/status-badges/v3/monitor/10itm.svg)](https://uptime.betterstack.com/?utm_source=status_badge)
 
 A simple deployer written in plain Python without any external dependencies to manage home projects through GitHub Actions.
 
